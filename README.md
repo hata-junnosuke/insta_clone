@@ -57,9 +57,25 @@
 - i18nの基本設定
   - config/appに記述
 - jqueryとpopperの追加（ブートストラップのため）
+- ログイン機能
+  - app.scssにcss記述
+  - controller/appにフラッシュタイプを記述
+  - rails g sorcery:install
+  - db/migrate/sorceryを編集
+  - bin/rails db:migrate
+  - Userモデルにバリデーション追加
+  - user_sessions_controller.rb
+  - users_controller.rb
+  - ja.ymlで日本語化
+  - routes.rb
+  - viewを作る
+  - ここでローカルでやってみたがフラッシュがエラー？ ActionView::MissingTemplate
+  - コメントアウトでやると画面は表示される。
+    
 
 ## TODO
 - rubocop修正
 - config/envi/deveに記述したがなんのためか不明なので調べる
   - https://ccbaxy.xyz/blog/2020/06/21/ruby47/
-- 
+- validates :password, length: { minimum: 3 }, if: -> { new_record? || changes[:crypted_password] }の意味
+- testが作成されている。
