@@ -49,6 +49,12 @@
   - stylesheet/application.scssに変更して@import記述
   - package.json記述
   - yarnインストール
+- generateコマンド時に生成されるファイルを制限する
+- gem 'redis-rails'
+  - config/envi/deveに記述したがなんのためか不明
 
 ## TODO
 - rubocop修正
+- config/envi/deveに記述したがなんのためか不明なので調べる
+  - https://ccbaxy.xyz/blog/2020/06/21/ruby47/
+- 
