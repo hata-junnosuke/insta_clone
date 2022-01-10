@@ -43,7 +43,7 @@
 - gem 'pry-rails'
   - https://pikawaka.com/rails/pry
 - gem 'sorcery'
-- 
+- gem 'slim-rails'
 
 ## TODO
 - rubocop修正
