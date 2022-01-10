@@ -41,6 +41,9 @@
 - binding_of_caller
 - gem 'pry-byebug'
 - gem 'pry-rails'
+  - https://pikawaka.com/rails/pry
+- gem 'sorcery'
+- 
 
 ## TODO
 - rubocop修正
