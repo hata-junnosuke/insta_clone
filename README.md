@@ -39,6 +39,8 @@
 - rubocop修正実行（1 offense todoにも残り）
 - better_errors
 - binding_of_caller
+- gem 'pry-byebug'
+- gem 'pry-rails'
 
 ## TODO
 - rubocop修正

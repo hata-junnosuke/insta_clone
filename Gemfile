@@ -54,6 +54,8 @@ group :development do
   # binding_of_callerはそのエラー画面にirbをつけてくれるgem。
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'pry-byebug'
+  gem 'pry-rails'
 end
 
 group :test do
