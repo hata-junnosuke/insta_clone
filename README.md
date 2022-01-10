@@ -52,6 +52,11 @@
 - generateコマンド時に生成されるファイルを制限する
 - gem 'redis-rails'
   - config/envi/deveに記述したがなんのためか不明
+- タイムゾーンの設定
+  - config/appに記述
+- i18nの基本設定
+  - config/appに記述
+- jqueryとpopperの追加（ブートストラップのため）
 
 ## TODO
 - rubocop修正

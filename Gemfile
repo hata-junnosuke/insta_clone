@@ -30,6 +30,8 @@ gem 'jbuilder', '~> 2.5'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
+gem 'jquery-rails'
+gem 'popper_js'
 # ログインで使用
 gem 'sorcery'
 gem 'slim-rails'
