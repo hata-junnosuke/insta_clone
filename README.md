@@ -37,4 +37,8 @@
 - %表記の追加（コロンの削除を忘れずに）
 - rubocop追加
 - rubocop修正実行（1 offense todoにも残り）
-- 
+- better_errors
+- binding_of_caller
+
+## TODO
+- rubocop修正

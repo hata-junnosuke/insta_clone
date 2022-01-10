@@ -50,6 +50,10 @@ group :development do
   # rubocop追加
   gem 'rubocop'
   gem 'rubocop-rails'
+  # better_errorsはデフォルトのエラー画面をわかりやすく成形してくれるgem。
+  # binding_of_callerはそのエラー画面にirbをつけてくれるgem。
+  gem 'better_errors'
+  gem 'binding_of_caller'
 end
 
 group :test do
