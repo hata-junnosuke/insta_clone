@@ -44,6 +44,11 @@
   - https://pikawaka.com/rails/pry
 - gem 'sorcery'
 - gem 'slim-rails'
+- BMD導入
+  - assets/javascript/application.jsを編集
+  - stylesheet/application.scssに変更して@import記述
+  - package.json記述
+  - yarnインストール
 
 ## TODO
 - rubocop修正
