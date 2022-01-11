@@ -72,6 +72,14 @@
   - ここでローカルでやってみたがフラッシュがエラー？ ActionView::MissingTemplate
   - コメントアウトでやると画面は表示される。
     
+## 1/11
+- 昨日のエラーは解消（なんだったのか、コメントを消したら解決）
+- annotaite
+  - gem追加
+  - bundle exec rails g annotate:install
+  -  bundle exec annotate
+
+
 
 ## TODO
 - rubocop修正
