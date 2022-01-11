@@ -77,7 +77,10 @@
 - annotaite
   - gem追加
   - bundle exec rails g annotate:install
-  -  bundle exec annotate
+  - bundle exec annotate
+- rubocop
+  -  bundle exec rubocop -a
+
 
 
 
@@ -87,3 +90,4 @@
   - https://ccbaxy.xyz/blog/2020/06/21/ruby47/
 - validates :password, length: { minimum: 3 }, if: -> { new_record? || changes[:crypted_password] }の意味
 - testが作成されている。
+- viewのコメント付け
