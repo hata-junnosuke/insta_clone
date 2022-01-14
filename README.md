@@ -51,7 +51,7 @@
   - yarnインストール
 - generateコマンド時に生成されるファイルを制限する
 - gem 'redis-rails'
-  - config/envi/deveに記述したがなんのためか不明
+  - config/envi/devに記述したがなんのためか不明
 - タイムゾーンの設定
   - config/appに記述
 - i18nの基本設定
@@ -79,15 +79,17 @@
   - bundle exec rails g annotate:install
   - bundle exec annotate
 - rubocop
-  -  bundle exec rubocop -a
+  - bundle exec rubocop -a
 
-
-
-
-## TODO
-- rubocop修正
-- config/envi/deveに記述したがなんのためか不明なので調べる
-  - https://ccbaxy.xyz/blog/2020/06/21/ruby47/
+## 1/14
+- rubocopの修正
 - validates :password, length: { minimum: 3 }, if: -> { new_record? || changes[:crypted_password] }の意味
+  - new_record?メソッドは、インスタンスが新規に作成されるものかどうかを判定するActive Recordのメソッド
+  - if: ->以下は条件付きバリデーションの、シンボルやLambdasてやProcの部分
+- config/envi/dev `config.session_store :redis_store, { servers: 'redis://localhost:6379', expire_after: 1.day }` 
+  - rails のセッション管理を redis サーバーで行っている。 
+  - expires_afterで有効期限を定めている
+  - https://ccbaxy.xyz/blog/2020/06/21/ruby47/
+## TODO
 - testが作成されている。
 - viewのコメント付け
