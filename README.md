@@ -45,12 +45,13 @@
   - `yarn install`
   - https://qiita.com/ken_ta_/items/bdf04d8ecab6a855e50f
   - みけたさんの記事 https://qiita.com/miketa_webprgr/items/0a3845aeb5da2ed75f82
-- routes.rbの編集
+- routes.rbの編集(この時点ではviewを作っていないのでエラー発生)
 - エラー発生
   - Sprockets::FileNotFound
   - 解決はassets/javascripts/swiper.jsを作成して中身を写経したら治った。
   - これは何かのコマンドで作成される？手動が正解？
-- 
+- アップロードファイルをgit管理対象外にした
+- ヘッダー作成
 
 ### TODO
 - モデル作成時にテストが作成されている。
