@@ -38,5 +38,15 @@
   - https://qiita.com/koki_73/items/fa6d31a3b54a84d19dcf
   - https://fontawesome.com/
 ### 1/17
-- Postsモデル作成
+- Postsモデル作成（テストができてる。。）
+- faker,carrierwaveの導入
+- swiperの導入
+  - `yarn add swiper`
+  - `yarn install`
+  - https://qiita.com/ken_ta_/items/bdf04d8ecab6a855e50f
+  - みけたさんの記事 https://qiita.com/miketa_webprgr/items/0a3845aeb5da2ed75f82
+  - 
+
+### TODO
+- モデル作成時にテストが作成されている。
 - 
