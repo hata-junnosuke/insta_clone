@@ -52,7 +52,18 @@
   - これは何かのコマンドで作成される？手動が正解？
 - アップロードファイルをgit管理対象外にした
 - ヘッダー作成
+- seedファイル作成
+  - db/seeds.rb
+  - db/seeds/users,posts
+  - `bin/rails db:seed`で作れるがまだpostのcrudがないのでエラー
+- postのi18対応
+- スマホ対応
+- root修正
+- 
 
 ### TODO
 - モデル作成時にテストが作成されている。
 - routesの順番変えたのはなぜ？
+- スマホ対応　
+  - `meta[name="viewport" content="width=device-width, initial-scale=1.0"]`
+- constraints ->  request { request.session[:user_id].present? } do
