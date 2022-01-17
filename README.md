@@ -38,4 +38,5 @@
   - https://qiita.com/koki_73/items/fa6d31a3b54a84d19dcf
   - https://fontawesome.com/
 ### 1/17
-  
+- Postsモデル作成
+- 
