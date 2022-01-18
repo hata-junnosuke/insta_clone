@@ -1,10 +1,5 @@
 Rails.application.routes.draw do
-  constraints ->(request) { request.session[:user_id].present? } do
-    # ログインしてる時のルートパス
-    root 'posts#index'
-  end
-  # ログインしてない時のルートパス
-  root 'user_sessions#new'
+  root 'posts#index'
 
   get 'login', to: 'user_sessions#new'
   post 'login', to: 'user_sessions#create'
