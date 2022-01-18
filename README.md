@@ -59,7 +59,15 @@
 - postのi18対応
 - スマホ対応
 - root修正
-- 
+
+### 1/18
+- コントローラー作成
+  - `$ bin/rails g controller posts index show new edit create destroy update`
+  - 上でやるとcreateなどのビューもできてしまうミス
+- ビューの作成とcss
+- carrierwave
+  - bundle exec rails g uploader post_image
+- CRUD実装
 
 ### TODO
 - モデル作成時にテストが作成されている。
@@ -67,3 +75,6 @@
 - スマホ対応　
   - `meta[name="viewport" content="width=device-width, initial-scale=1.0"]`
 - constraints ->  request { request.session[:user_id].present? } do
+- cssの確認
+- post、userモデルの確認
+- publicに入れ方
