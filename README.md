@@ -68,6 +68,8 @@
 - carrierwave
   - bundle exec rails g uploader post_image
 - CRUD実装
+- Swiper
+- 
 
 ### TODO
 - モデル作成時にテストが作成されている。
