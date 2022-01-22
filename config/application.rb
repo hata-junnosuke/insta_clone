@@ -13,13 +13,12 @@ module InstaClone
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 5.2
 
-    config.generators.system_tests = nil
-
     # generateコマンド時に生成されるファイルを制限する
     config.generators do |g|
       g.skip_routes true
       g.assets false
       g.helper false
+      g.test_framework false
     end
     # タイムゾーン
     config.time_zone = 'Tokyo'

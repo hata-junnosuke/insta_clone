@@ -73,10 +73,23 @@
 
 ### TODO
 - モデル作成時にテストが作成されている。
+  - `g.test_framework false`をconfig/appに記述することで解決
+  - https://qiita.com/kodai_0122/items/14494a3848654f32909d
 - routesの順番変えたのはなぜ？
+  - おそらくresourcesをまとめた。
 - スマホ対応　
   - `meta[name="viewport" content="width=device-width, initial-scale=1.0"]`
+  - この記述によって画面の大きさによってサイズを変更していることになる。
+  - https://qiita.com/pagk/items/ef3eabe0e9f7fe885284
 - constraints ->  request { request.session[:user_id].present? } do
-- cssの確認
-- post、userモデルの確認
-- publicに入れ方
+  - https://railsguides.jp/routing.html#:~:text=3.9%20%E3%83%AA%E3%82%AF%E3%82%A8%E3%82%B9%E3%83%88%E5%86%85%E5%AE%B9%E3%81%AB%E5%BF%9C%E3%81%98%E3%81%A6%E5%88%B6%E9%99%90%E3%82%92%E5%8A%A0%E3%81%88%E3%82%8B
+  - https://blog.piyo.tech/posts/2018-03-31-routes-constraints/
+  - constraintsで制限を加えることができる。
+- `require_login`ってどこかで書いたっけ？
+  - sorcery.controllerに入っている。
+  - 同様にlogin,current_userなどもここに記述があった。
+- 複数の画像を保存する
+  - https://qiita.com/tanutanu/items/47f8a229ef52cae3c251
+  - モデルにserialize :images, JSON
+  - コントローラーにimages: []
+  - ビューにmultiple: true
