@@ -414,6 +414,20 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
+      <library name="carrierwave (vbundled(2.2.2)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="4" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/carrierwave-2.2.2/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/carrierwave-2.2.2/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library name="childprocess (vbundled(4.1.0)) [path][gem]" type="rubylib">
         <properties>
           <option name="version" value="4" />
@@ -557,6 +571,25 @@
         <SOURCES>
           <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/execjs-2.8.1/lib" />
         </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="faker (vbundled(2.19.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="4" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/faker-2.19.0/bin" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/faker-2.19.0/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/faker-2.19.0/bin" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/faker-2.19.0/lib" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/faker-2.19.0/bin" />
+        </excluded>
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -794,6 +827,20 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
+      <library name="image_processing (vbundled(1.12.1)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="4" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/image_processing-1.12.1/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/image_processing-1.12.1/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library name="io-like (vbundled(0.3.1)) [path][gem]" type="rubylib">
         <properties>
           <option name="version" value="4" />
@@ -972,6 +1019,20 @@
           <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/method_source-1.0.0/spec" />
           <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/method_source-1.0.0/.circleci" />
         </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="mini_magick (vbundled(4.11.0)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="4" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/mini_magick-4.11.0/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/mini_magick-4.11.0/lib" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -1852,6 +1913,28 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
+      <library name="ruby-vips (vbundled(2.1.4)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="4" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ruby-vips-2.1.4/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ruby-vips-2.1.4/.github" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ruby-vips-2.1.4/example" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ruby-vips-2.1.4/lib" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ruby-vips-2.1.4/.github" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ruby-vips-2.1.4/example" />
+        </SOURCES>
+        <excluded>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ruby-vips-2.1.4/.github" />
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ruby-vips-2.1.4/example" />
+        </excluded>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library name="ruby2_keywords (vbundled(0.0.5)) [path][gem]" type="rubylib">
         <properties>
           <option name="version" value="4" />
@@ -2135,6 +2218,20 @@
         <JAVADOC />
         <SOURCES>
           <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/sprockets-rails-3.4.2/lib" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="ssrf_filter (vbundled(1.0.7)) [path][gem]" type="rubylib">
+        <properties>
+          <option name="version" value="4" />
+        </properties>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ssrf_filter-1.0.7/lib" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/vendor/bundle/ruby/2.6.0/gems/ssrf_filter-1.0.7/lib" />
         </SOURCES>
       </library>
     </orderEntry>
