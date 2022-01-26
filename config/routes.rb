@@ -8,6 +8,10 @@ Rails.application.routes.draw do
   resources :users, only: %i[index new create show]
   # shallowルーティング
   resources :posts, shallow: true do
+    # これによりposts/search
+    collection do
+      get :search
+    end
     resources :comments
   end
 
