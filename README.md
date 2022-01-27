@@ -41,9 +41,19 @@ end
 - avatar_uploader.rb作成
 
 4. プロフィール編集画面の実装
-
-
-
+- ここまでの実装
+  - https://github.com/hata-junnosuke/insta_clone/pull/12/commits/ee83b16bf369752980e5e9561b3f5e2f81279712
+  
+5.　細かい修正
+- locales/ja.ymlに追加
+  - avatar: 'アバター'
+- 自分のページであれば編集ページへのリンクを表示
+- デフォルト画像のところを編集
+- ユーザー一覧の上を編集画面のリンクへ
+- &.で未ログイン時に編集画面に行ったときのエラー発生を防ぐ
+  - `if current_user&.id == @user.id`
+- rubocop
+- 
 ## 学習ポイント
 ### 編集画面は/mypage/account/editというパスとする
 
@@ -61,3 +71,4 @@ end
 - userコントローラーでeditでは良くないのか。
 - mypage/account_controllerは一気に作れないか？（rails g controllerのように）
 - layoutに入れるviewなぜ？
+- 4の考察
