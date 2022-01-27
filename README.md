@@ -1,36 +1,63 @@
 # README
 
-# 08 ユーザーの詳細ページに投稿一覧を表示する
+# 09 プロフィール編集機能
 
 ## 内容
-ユーザーの詳細ページに同ユーザーの投稿を一覧表示させてください。
+プロフィールの編集機能を実装してください
 
 ## 補足
-- タイル表示させる
-- ヘッダーのユーザーアイコンに自分のユーザー詳細ページへのリンクを設定してさせる
-
+- 編集画面は/mypage/account/editというパスとする
+- アバターとユーザー名を変更できるようにする
+- アバター選択時（ファイル選択時）にプレビューを表示する
+- image_magickを使用して、画像は横幅or縦幅が最大400pxとなるようにリサイズする
+- 以降の課題でもマイページに諸々追加するのでそれを考慮した設計とする（ルーティングやコントローラやレイアウトファイルなど）
 ## 開発メモ
 ### 1/27
-- ヘッダーの画像から詳細画面へのリンク
-- 詳細画面で投稿一覧見れるように
-- 詳細に投稿の画像表示して投稿の詳細リンクをつける
-- SCSS編集
+1. まずはUserモデルにアバター用のカラムを追加する
+    - ` bundle exec rails g migration AddAvatarToUsers`
+    - マイグレーションファイルを変更
+```
+#  db/migrate/20220127042444_add_avatar_to_users.rb
+  class AddAvatarToUsers < ActiveRecord::Migration[5.2]
+    def change
+      add_column :users, :avatar, :string
+    end 
+  end
+```
+  - `bundle exec rails db:migrate`
+2. 編集画面は/mypage/account/editというパスとする
+- routes.rb
+```bigquery
+namespace :mypage do
+    resource :account, only: %i[edit update]
+end
+```
+3. 画像のセッティング（carrierwave）
+- userモデル
+```
+# 画像セットのため
+  mount_uploader :avatar, AvatarUploader
+```
+- avatar_uploader.rb作成
+
+4. プロフィール編集画面の実装
+
+
 
 ## 学習ポイント
-- なぜ`thumbnail_post.images.first.url`なのか
-  - https://tech-essentials.work/questions/143
-  - ><%= render partial: 'fuga', collection: @hoges %>の場合、ローカル変数として使われるのはhogeではなくfugaです。
-  なので、<%= render @hoges %>の場合にview側でhogeと書けるのも、@hogesの単数系だからではありません。
-パーシャル名がhogeだから、ローカル変数がhogeとなるんです。
-  - ここを勘違いしていた。collectionで変数を決めていると思っていた。
-  - ではcollectionは何をしている？
-    - コレクションとしてどんな情報（配列っぽいもの）を渡してやるかをcollection:オプションで指定してやります。
-    - ってことはthumbnail_postという変数には@user.postsの情報が入っているということ。
+### 編集画面は/mypage/account/editというパスとする
 
-- bootstrapの.col-md-10.offset-md-1
-  - 今更だがoffsetで余白を作っていたと理解
-- 画像でのリンクの貼り方
-```bigquery
-= link_to post_path(thumbnail_post), class: 'thumbs' do #ここでリンク先を指定
-    = image_tag thumbnail_post.images.first.url #ここでリンクを貼る画像を指定
-```
+### アバターとユーザー名を変更できるようにする
+
+### アバター選択時（ファイル選択時）にプレビューを表示する
+
+### image_magickを使用して、画像は横幅or縦幅が最大400pxとなるようにリサイズする
+
+### 以降の課題でもマイページに諸々追加するのでそれを考慮した設計とする（ルーティングやコントローラやレイアウトファイルなど）
+
+メモ
+- mypageで扱う理由
+- 利点は編集のURLでIDがわからない？
+- userコントローラーでeditでは良くないのか。
+- mypage/account_controllerは一気に作れないか？（rails g controllerのように）
+- layoutに入れるviewなぜ？
