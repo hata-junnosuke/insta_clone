@@ -1,149 +1,60 @@
 # README
 
-# 09 プロフィール編集機能
-
+# 10 通知機能の実装
 
 ## 内容
-プロフィールの編集機能を実装してください
+- 通知機能を実装してください。
+- タイミングと文言は以下の通りとします。（リンク）と書いてある箇所はリンクを付与してください。   
+  -フォローされたとき
+  -xxx（リンク）があなたをフォローしました
+  - 通知そのものに対してはxxxへのリンクを張る
+  - 自分の投稿にいいねがあったとき
+    - xxx（リンク）があなたの投稿（リンク）にいいねしました
+    - 通知そのものに対しては投稿へのリンクを張る
+  - 自分の投稿にコメントがあったとき
+    - xxx（リンク）があなたの投稿（リンク）にコメント（リンク）しました
+    - 通知そのものに対してはコメントへのリンクを張る（厳密には投稿ページに遷移し当該コメント部分にページ内ジャンプするイメージ）
+- 既読判定も行ってください。通知一覧において、既読のものは薄暗い背景で、未読のものは白い背景で表示しましょう。
+- 既読とするタイミングは各通知そのものをクリックした時とします。
+- 不自然ではありますが通知の元となったリソースが削除された際には通知自体も削除する仕様とします。
 
 ## 補足
-- 編集画面は/mypage/account/editというパスとする
-- アバターとユーザー名を変更できるようにする
-- アバター選択時（ファイル選択時）にプレビューを表示する
-- image_magickを使用して、画像は横幅or縦幅が最大400pxとなるようにリサイズする
-- 以降の課題でもマイページに諸々追加するのでそれを考慮した設計とする（ルーティングやコントローラやレイアウトファイルなど）
-## 開発メモ
-## 1. まずはUserモデルにアバター用のカラムを追加する
-    - ` bundle exec rails g migration AddAvatarToUsers`
-    - マイグレーションファイルを変更
-    ```
-    #  db/migrate/20220127042444_add_avatar_to_users.rb
-      class AddAvatarToUsers < ActiveRecord::Migration[5.2]
-        def change
-          add_column :users, :avatar, :string
-        end 
-      end
-    ```
-    - `bundle exec rails db:migrate`
+- ポリモーフィック関連を使うこと
+- ヘッダー部分の通知リストには最新の10件しか表示させないこと
 
-## 2. 編集画面は/mypage/account/editというパスとする
-- routes.rb
+# 開発メモ
+### 0. 予習ポイント
+解答例のコードから初めて見るものを事前学習をする。
+- 通知機能はどう実装する？
+  >https://qiita.com/ytoo14/items/2db1dd4fcd7945b980f7 (実装形式は違うが参考までに)
+- ポリモーフィック関連とは？
+  - ポリモーフィック関連付けを使うと、ある1つのモデルが他の複数のモデルに属していることを、1つの関連付けだけで表現できます。
+  >https://railsguides.jp/association_basics.html#%E3%83%9D%E3%83%AA%E3%83%A2%E3%83%BC%E3%83%95%E3%82%A3%E3%83%83%E3%82%AF%E9%96%A2%E9%80%A3%E4%BB%98%E3%81%91
+- `enum action_type: { commented_to_own_post: 0, liked_to_own_post: 1, followed_me: 2 }`
+  - これはaction_typeを定義している。（○○なら1みたいに）
+- `after_create_commit :create_activities`
+  - after_create_commitはcreateをすると指定したアクションが発動することを表す
+  > https://railsguides.jp/active_record_callbacks.html#:~:text=%E5%AE%A3%E8%A8%80%E3%81%A7%E3%81%8D%E3%81%BE%E3%81%99%E3%80%82-,10%20%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E3%82%B3%E3%83%BC%E3%83%AB%E3%83%90%E3%83%83%E3%82%AF,-%E3%83%87%E3%83%BC%E3%82%BF%E3%83%99%E3%83%BC%E3%82%B9%E3%81%AE%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3
+- gem 'letter_opener_web'(このgemは最終的にはこの課題では導入されていない)
+  - letter_openerに送信された電子メールを閲覧するためのインターフェースを提供します。(とりあえずメールに関するgemと理解)
+  >https://qiita.com/tanutanu/items/c6193c4c2c352ac152ec
 
-    namespace :mypage do
-        resource :account, only: %i[edit update]
+### 1. 通知機能実装
+#### モデル作成
+1. `$ bundle exec rails g model activity subject:references user:references action:integer read:boolean`
+2. マイグレーションファイル編集
+```bigquery
+class CreateActivities < ActiveRecord::Migration[5.2]
+  def change
+    create_table :activities do |t|
+      t.references :subject, polymorphic: true
+      t.references :user, foreign_key: true
+      t.integer :action_type, null: false
+      t.boolean :read, null: false, default: false
+
+      t.timestamps
     end
->ルーティングについてはこちらを参考にする
->https://tech-essentials.work/movies/1
-
-### なぜnamespace :mypageを使うのか
-- users_controllerでeditを設定すればいいのではないかと思った。
-- https://github.com/miketa-webprgr/TIL/blob/master/11_Rails_Intensive_Training/09_issue_note.md
->mypageディレクトリ以下にコントローラファイルやビューファイルが保存されるようになる。
->管理者画面を実装する場合、「管理者であれば〜を表示したい」ということや、
->「管理者であれば〜という機能を実装したい」などということが多いかと思う。
->そのような場合、ディレクトリを分けることなく、if文などを使って対応することもできるが、
-namespaceを使って、ディレクトリを分ける方がスマートである。
-
-とのこと。
-## 3. 画像のセッティング（carrierwave）
-公式　https://github.com/carrierwaveuploader/carrierwave#getting-started
-1. `rails generate uploader Avatar`
-2. app/uploaders/avatar_uploader.rbが作成される
-3. avatar_uploader.rbの設定を行う（基本的には、コメントアウトを戻す・修正する形で行える）
-4. Carrierwaveが使えるように、User.rbファイルに追記を行う
-
-      #user.rb
-      # 画像セットのため追記
-      mount_uploader :avatar, AvatarUploader 
-## 4. プロフィール編集画面の実装
-### コントローラー
-- 編集画面しか実装しないので、editアクションとupdateアクションの設定
-- `.permit(:email, :username, :avatar, :avatar_cache)`について、編集画面では`:username`と`:avatar`のみでいいが、今後を見据えて他のものも入っていると思われる。
-
-```
-#mypage/accounts_controller.rb
-class Mypage::AccountsController < Mypage::BaseController
-  def edit
-    @user = User.find(current_user.id)
-  end
-
-  def update
-    @user = User.find(current_user.id)
-    if @user.update(account_params)
-      redirect_to edit_mypage_account_path, success: 'プロフィールを更新しました'
-    else
-      flash.now['danger'] = 'プロフィールの更新に失敗しました'
-      render :edit
-    end
-  end
-
-  private
-
-  def account_params
-    params.require(:user).permit(:email, :username, :avatar, :avatar_cache)
   end
 end
 ```
-### mypage/base_controller.rbの設定
-- いわば、mypage版のapplication_controller.rbと思ってもいい。（と思う。）
-```
-class Mypage::BaseController < ApplicationController
-  before_action :require_login
-  layout 'mypage'
-end
-```
-### ビューの実装
-- application.html.slimのような立ち位置でlayout/mypage.html.slimを作成
-```
-/layouts/mypage.html.slim
-
-doctype html
-html
-  head
-    meta content=("text/html; charset=UTF-8") http-equiv="Content-Type" /
-    meta[name="viewport" content="width=device-width, initial-scale=1.0"]
-    title マイページ | InstaCloneApp
-    = csrf_meta_tags
-    = csp_meta_tag
-    = stylesheet_link_tag 'mypage', media: 'all'
-    = javascript_include_tag 'mypage'
-  body
-    = render 'shared/header'
-    = render 'shared/flash_messages'
-    main
-      .container
-        .row
-          .col-md-8.offset-md-2
-            .card
-              .card-body
-                .row
-                  .col-md-3
-                    = render 'mypage/shared/sidebar'　　#この後作成
-                  .col-md-9
-                    .mypage_content
-                      = yield　　　　#これでedit.html.slimを入れて表示させる
-```
-- mypage/shared/sidebarを作成
-- edit.html.slimを作成
-
-### プレビューの実装
-- assets/javascripts/mypage.jsにおいてJavascriptでFileAPIっていうのを使っているらしい。
-> [JavaScript FileAPIについて学ぶ \- Qiita](https://qiita.com/kodokunadancer/items/8028d87d8d2bc6c00e69)
-- ちょっとここは後回しにして理解しようと思います。
-
-## 5. 細かい修正
-- locales/ja.ymlに追加(avatar: 'アバター)
-- 自分のページであれば編集ページへのリンクを表示
-- デフォルト画像のところを編集
-- ユーザー一覧の上を編集画面のリンクへ
-- &.で未ログイン時に編集画面に行ったときのエラー発生を防ぐ
-    - `if current_user&.id == @user.id`
--  rubocop
-
-## コメント
-- /mypage/account/editを使うメリットはスマートということ以外にeditのviewにいくURLにidが含まれないこと（セキュリティー面）なのかなと思いました。
-- mypage/account_controllerは一気に作れないのでしょうか。（rails g controllerのように）
-- FileAPIについては理解に時間がかかりそうなので後回しで先に進もうと思います。
-- みけたさんのノートを参考に理解させていただきました。ありがとうございました。
->参考
->https://github.com/miketa-webprgr/TIL/blob/master/11_Rails_Intensive_Training/09_issue_note.md
+3`bundle exec rails db:migrate`
