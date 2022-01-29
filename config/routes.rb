@@ -18,7 +18,19 @@ Rails.application.routes.draw do
   resources :likes, only: %i[create destroy]
   resources :relationships, only: %i[create destroy]
 
+  resources :activities, only: [] do
+    patch :read, on: :member
+  end
+
   namespace :mypage do
     resource :account, only: %i[edit update]
+    resources :activities, only: %i[index]
   end
+
+  constraints ->(request) { request.session[:user_id].present? } do
+    # ログインしてる時のルートパス
+    root 'posts#index'
+  end
+  # ログインしてない時のルートパス
+  root 'user_sessions#new'
 end

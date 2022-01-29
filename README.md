@@ -38,7 +38,8 @@
 - gem 'letter_opener_web'(このgemは最終的にはこの課題では導入されていない)
   - letter_openerに送信された電子メールを閲覧するためのインターフェースを提供します。(とりあえずメールに関するgemと理解)
   >https://qiita.com/tanutanu/items/c6193c4c2c352ac152ec
-
+- 既読管理
+  - `@import 'header';`// ヘッダー用のscssを取り込みます。
 ### 1. 通知機能実装
 #### モデル作成
 1. `$ bundle exec rails g model activity subject:references user:references action:integer read:boolean`
@@ -57,4 +58,46 @@ class CreateActivities < ActiveRecord::Migration[5.2]
   end
 end
 ```
-3`bundle exec rails db:migrate`
+3. `bundle exec rails db:migrate`
+4. モデルの関連づけ
+activity.rb
+```bigquery
+class Activity < ApplicationRecord
+  # ポリモーフィック関連
+  belongs_to :subject, polymorphic: true
+  belongs_to :user
+
+  # ここでaction_typeを数字に変換（コメントに対してなら0みたいな）
+  enum action_type: { commented_to_own_post: 0, liked_to_own_post: 1, followed_me: 2 }
+end
+
+```
+user.rb
+```bigquery
+has_many :activities, dependent: :destroy #これを追記
+```
+comment.rb(他のモデルは省略)
+```bigquery
+#以下を追記
+#createが発生したアクションが発動
+  after_create_commit :create_activities
+
+  private
+
+  def create_activities
+    Activity.create(subject: self, user: post.user, action_type: :commented_to_own_post)
+  end
+```
+
+#### ビューの作成
+解答例で確認
+
+#### cssとja.yml
+解答例で確認
+
+
+### 2. 既読管理
+
+### 考察
+- create_activityのなかみ
+- 
