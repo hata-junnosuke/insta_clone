@@ -1,6 +1,6 @@
 - if @activities.present?
   - @activities.each do |activity|
-     = render "#{activity.action_type}", activity: activity
+    = render "#{activity.action_type}", activity: activity
   = paginate @activities
 
 - else
