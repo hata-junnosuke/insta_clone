@@ -43,6 +43,10 @@ gem 'carrierwave'
 gem 'kaminari'
 # 定数を管理するgem
 gem 'config'
+# 非同期実行を実現するgem
+gem 'sidekiq'
+# 最小の労力でRubyによるWebアプリケーションを手早く作るためのDSL
+gem 'sinatra'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.1.0', require: false
 

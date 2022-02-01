@@ -1,142 +1,136 @@
 # README
 
-# 11 メール通知
+# 12 メールのジョブの永続化を実装
 
 ## 内容
-メール通知機能を実装してください。
-タイミングと文言は以下の通りとします。
-- フォローされたとき
-- 自分の投稿にいいねがあったとき
-- 自分の投稿にコメントがあったとき
+- メールのジョブを永続化できるように実装してください。
+- ActiveJobのアダプターにはsidekiqを利用してください。
 
 ## 補足
-- default_url_optionsの設定値はconfigというgemを使い定数として設定すること
-- 今後定数に関してはconfigを使う方針とする
-  ![image](https://user-images.githubusercontent.com/81806676/151790079-637af031-2d91-4327-835b-ed0c79eb4b3a.png)
-
-
+- ダッシュボード用にsinatraもインストールする
 
 # 予習
-## gem configとは
-- 一言で言えば**定数を管理するgem**
-- **環境ごとに違う定数を用いたい**または**いろいろなところに散らばる定数をまとめたい**ときにconfigを使うといいらしい。
-- 使い方については以下を参照
->https://github.com/rubyconfig/config
->
->https://qiita.com/tanutanu/items/8d3b06d0d42af114a383
-## gem letter_opener_webとは
-- letter_openerに送信された電子メールを閲覧するためのインターフェースを提供します。
-- 使い方については以下を参照
->https://github.com/fgrehm/letter_opener_web
->
->https://qiita.com/tanutanu/items/c6193c4c2c352ac152ec
+## ActiveJobとは？
+- バックグラウンドでさまざまな処理を非同期に行うためのRailsのフレームワーク(現場Rails)
+## sidekiqとは？(以前にも使ったが復習)
+- sidekiqはresqueやdelayed_jobのような非同期実行を実現するgemです<br>
+- キーバリュー型のデータベースのRedisを使う。
+>https://qiita.com/nysalor/items/94ecd53c2141d1c27d1f
+## sinatraとは？
+- Sinatraは最小の労力でRubyによるWebアプリケーションを手早く作るためのDSLです。
+- 今回はsidekiqのダッシュボードを表示するために使われる
+>http://sinatrarb.com/intro-ja.html
 
 # 実装
 ## gemのインストール
-- gem config
-- gem letter_opener_web<br>
-  以上をgemfileに記述して`bundle install`
+1. gemの記述
+2. `bundle install`
 
-## configの設定
-1. `bundle exec rails g config:install`
-- 各ファイルが作成される。<br>
-  [![Image from Gyazo](https://i.gyazo.com/55927efde24dbbac64236f83b6ff761e.png)](https://gyazo.com/55927efde24dbbac64236f83b6ff761e)
-- .gitignoreに追記される
 ```
-#localで使うものはgithubに上げないように
-config/settings.local.yml
-config/settings/*.local.yml
-config/environments/*.local.yml
-```
-- config/initializers/config.rb
-  設定が定義される。<br>
-  `config.const_name = 'Settings'`
-- ymlファイルは空ファイル
+#gemfile
 
-## メールの設定
-1. `$ bundle exec rails generate mailer UserMailer`
-   [![Image from Gyazo](https://i.gyazo.com/45664c13f1db10e10f518c9c95d20607.png)](https://gyazo.com/45664c13f1db10e10f518c9c95d20607)
-2. メール受信の設定を定数として設定
+# 非同期実行を実現するgem
+gem 'sidekiq'
+# 最小の労力でRubyによるWebアプリケーションを手早く作るためのDSL
+gem 'sinatra'
+
 ```
-#config/environments/development.rb
-  #以下を追記
-  # アプリケーションのホスト情報をメイラー内で使うためのオプション
-  config.action_mailer.default_url_options = Settings.default_url_options.to_h
-  # 配信方法を指定
-  config.action_mailer.delivery_method = :letter_opener_web
+## sidekiqの設定
+1. `redis-surver`でredisを起動する
+2. `bundle exec sidekiq`
+- `bundle exec sidekiq -q default -q mailers`でdefaultというキューとmailersという２種類のキューを受け付ける
+```bigquery
+$ bundle exec sidekiq -q default -q mailers
+
+
+               m,
+               `$b
+          .ss,  $$:         .,d$
+          `$$P,d$P'    .,md$P"'
+           ,$$$$$b/md$$$P^'
+         .d$$$$$$/$$$P'
+         $$^' `"/$$$'       ____  _     _      _    _
+         $:     ,$$:       / ___|(_) __| | ___| | _(_) __ _
+         `b     :$$        \___ \| |/ _` |/ _ \ |/ / |/ _` |
+                $$:         ___) | | (_| |  __/   <| | (_| |
+                $$         |____/|_|\__,_|\___|_|\_\_|\__, |
+              .d$$                                       |_|
+      
+
+2022-02-01T09:33:47.292Z pid=67433 tid=oxds3zho5 INFO: Booted Rails 5.2.6 application in development environment
+2022-02-01T09:33:47.292Z pid=67433 tid=oxds3zho5 INFO: Running in ruby 2.6.4p104 (2019-08-28 revision 67798) [x86_64-darwin20]
+2022-02-01T09:33:47.292Z pid=67433 tid=oxds3zho5 INFO: See LICENSE and the LGPL-3.0 for licensing details.
+2022-02-01T09:33:47.292Z pid=67433 tid=oxds3zho5 INFO: Upgrade to Sidekiq Pro for more features and support: https://sidekiq.org
+2022-02-01T09:33:47.293Z pid=67433 tid=oxds3zho5 INFO: Booting Sidekiq 6.4.0 with redis options {}
+2022-02-01T09:33:47.308Z pid=67433 tid=oxds3zho5 INFO: Starting processing, hit Ctrl-C to stop
+
+
+```
+3. Railsとsidekiqを連携させるための設定を追記して、サーバーの再起動
+```bigquery
+#config/application.rb
+
+# Railsとsidekiqを連携させるための追記
+config.active_job.queue_adapter = :sidekiq
+```
+```bigquery
+#config/sidekiq.rb
+
+# Redisの場所を特定するのにSidekiq.configure_serverブロックとSidekiq.configure_clientブロックの両方を定義する
+Sidekiq.configure_server do |config|
+  config.redis = {
+      url: 'redis://localhost:6379'
+  }
+end
+
+Sidekiq.configure_client do |config|
+  config.redis = {
+      url: 'redis://localhost:6379'
+  }
 end
 ```
-```
-#config/settings/development.yml
+```bigquery
+#sidekiq.yml
 
-#setting.default_url_optionsとするとhost: 'localhost:3000'を取得できる
-default_url_options:
-  host: 'localhost:3000'
+# 同時に処理できるprocessの数を設定
+:concurrency: 25
+# キューの実行順を設定
+:queues:
+  - default
+  - mailers
 ```
-3. メールの実装
-- メールに関するアクションを設定（いいねとフォローについては省略）
-```
-#app/mailers/user_mailer.rb
-class UserMailer < ApplicationMailer
-  def comment_post
-  　　　　# コメントを受けたユーザー
-    @user_from = params[:user_from]
-    # コメントをしたユーザー
-    @user_to = params[:user_to]
-    @comment = params[:comment]
-    #コメントを受けたことを通知するメールを設定
-    mail(to: @user_to.email, subject: "#{@user_from.username}があなたの投稿にいいねしました")
-  end
-end
-```
-- コメントされた時にメールで通知する設定（いいねとフォローについては省略）
-```
-#app/controllers/comments_controller.rb
-def create
-    @comment = current_user.comments.build(comment_params)
-    #@comment.saveから変更
-    #コメントがsaveされたら受け手に対してメールを送信する。
-    UserMailer.with(user_from: current_user, user_to: @comment.post.user, comment: @comment).comment_post.deliver_later if @comment.save
-end
-```
+## sinatraダッシュボードの追加
+```bigquery
+ # routes.rb
 
-- デフォルトの送信元を設定
-```
-#app/mailers/application_mailer.rb
-class ApplicationMailer < ActionMailer::Base
-  default from: 'instaclone@example.com'
-  layout 'mailer'
-end
-```
-- ビューの作成　（いいねとフォローについては省略）
-```
-#app/views/user_mailer/comment_post.html.slim
-#メールの本文
-h2 = "#{@user_to.username}さん"
-p = "#{@user_from.username}さんがあなたの投稿にコメントしました。"
-= link_to "確認する", post_url(@comment.post, { anchor: "comment-#{@comment.id}" })
-```
-- ルーティング
-```
-#公式で設定することが記述
+require 'sidekiq/web'
+
+Rails.application.routes.draw do
 if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: '/letter_opener'
+--     以下を追記
+    mount Sidekiq::Web, at: '/sidekiq'
 end
 ```
 
-## 確認してみよう。
-1. コメントをする
-   [![Image from Gyazo](https://i.gyazo.com/3d352af6dbc9f4a7e2a1d54bab24830b.png)](https://gyazo.com/3d352af6dbc9f4a7e2a1d54bab24830b)
-2. ログを見る
-- **送れている模様！**
-  [![Image from Gyazo](https://i.gyazo.com/38be9e8af75396fb060759949ebe4aa9.png)](https://gyazo.com/38be9e8af75396fb060759949ebe4aa9)
-3. http://localhost:3000/letter_opener/　で確認
-- **できていた！**
-  [![Image from Gyazo](https://i.gyazo.com/03cc88a519f7565dc2b2685a125c1153.png)](https://gyazo.com/03cc88a519f7565dc2b2685a125c1153)
+# 確認してみよう！
+1. 投稿にコメントをする
+2. メールが送信される(http://localhost:3000/letter_opener/)
+- **送れていることを確認!**
+   [![Image from Gyazo](https://i.gyazo.com/80a0fa730ecf6751f4ef27a3dd64211d.png)](https://gyazo.com/80a0fa730ecf6751f4ef27a3dd64211d)
+3. ダッシュボードで確認(http://localhost:3000/sidekiq/)
+- **ダッシュボードでsidekiqが動作していることを確認！**
+   [![Image from Gyazo](https://i.gyazo.com/b23ae9a7047e68164bbcad3c8bb5990a.png)](https://gyazo.com/b23ae9a7047e68164bbcad3c8bb5990a)
+4. ログでも確認
+- **Railsがsidekiqへ指示を出している**
+   [![Image from Gyazo](https://i.gyazo.com/5dd9c671a3a5f8c3f23812b6af3e8eb0.png)](https://gyazo.com/5dd9c671a3a5f8c3f23812b6af3e8eb0)
+- **sidekiqが動き出した**  
+[![Image from Gyazo](https://i.gyazo.com/81982fa609bb326d6a2a97b7d1c8432a.png)](https://gyazo.com/81982fa609bb326d6a2a97b7d1c8432a)
+# まとめ
+- 今回の目的はsidekiqを用いて、メールに関する処理を別のレールで並行して行えるようにすることと理解
+- そしてsidekiqを使うためにはRedisが必要
+- また今回はsidekiqの動作を確認するためにsinatraを用いてダッシュボードを使った。
 
-
-## コメント
-- 今回の実装はこれまでよりも比較的理解しながら進められた感覚があります。
-- configを使う場面は規模が大きくなると整理するために必要なのかなと思いました。ただ正直なくてもいいかなとも思いました。
-- 段々、前回の通知でもそうでしたがスパルタコースのホームページでも使われている技術を吸収できている気がしてます。実際に使える技術を修得できてきている気がします。
-- あと、解答例でコメントがあったことを伝えるメールでタイトルが「あなたの投稿にいいねしました」になってしまっています。
+# コメント
+- メールなどの重い処理の際にsidekiqは必要であると感じました。
+- おそらく規模の大きいアプリになると重要度は増すのではないかと思いました。
