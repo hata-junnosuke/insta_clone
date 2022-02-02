@@ -1,136 +1,129 @@
 # README
 
-# 12 メールのジョブの永続化を実装
+# 13 通知の設定を実装
 
-## 内容
-- メールのジョブを永続化できるように実装してください。
-- ActiveJobのアダプターにはsidekiqを利用してください。
+# 内容
+通知をするかしないかをユーザーが設定できる機能を実装してください。
 
-## 補足
-- ダッシュボード用にsinatraもインストールする
+# 補足
+- マイページに通知設定というメニューを追加してください
+- コメント時の通知メール, いいね時の通知メール, フォロー時の通知メールのオンオフを切り替えられるようにしてください
 
-# 予習
-## ActiveJobとは？
-- バックグラウンドでさまざまな処理を非同期に行うためのRailsのフレームワーク(現場Rails)
-## sidekiqとは？(以前にも使ったが復習)
-- sidekiqはresqueやdelayed_jobのような非同期実行を実現するgemです<br>
-- キーバリュー型のデータベースのRedisを使う。
->https://qiita.com/nysalor/items/94ecd53c2141d1c27d1f
-## sinatraとは？
-- Sinatraは最小の労力でRubyによるWebアプリケーションを手早く作るためのDSLです。
-- 今回はsidekiqのダッシュボードを表示するために使われる
->http://sinatrarb.com/intro-ja.html
 
 # 実装
-## gemのインストール
-1. gemの記述
-2. `bundle install`
+今回は早速実装にかかる。
 
-```
-#gemfile
-
-# 非同期実行を実現するgem
-gem 'sidekiq'
-# 最小の労力でRubyによるWebアプリケーションを手早く作るためのDSL
-gem 'sinatra'
-
-```
-## sidekiqの設定
-1. `redis-surver`でredisを起動する
-2. `bundle exec sidekiq`
-- `bundle exec sidekiq -q default -q mailers`でdefaultというキューとmailersという２種類のキューを受け付ける
+## カラムを追加する。
+1. `$ bundle exec rails g migration AddNotificationFlagsToUsers`
+2. マイグレーションファイルをいじる
 ```bigquery
-$ bundle exec sidekiq -q default -q mailers
-
-
-               m,
-               `$b
-          .ss,  $$:         .,d$
-          `$$P,d$P'    .,md$P"'
-           ,$$$$$b/md$$$P^'
-         .d$$$$$$/$$$P'
-         $$^' `"/$$$'       ____  _     _      _    _
-         $:     ,$$:       / ___|(_) __| | ___| | _(_) __ _
-         `b     :$$        \___ \| |/ _` |/ _ \ |/ / |/ _` |
-                $$:         ___) | | (_| |  __/   <| | (_| |
-                $$         |____/|_|\__,_|\___|_|\_\_|\__, |
-              .d$$                                       |_|
-      
-
-2022-02-01T09:33:47.292Z pid=67433 tid=oxds3zho5 INFO: Booted Rails 5.2.6 application in development environment
-2022-02-01T09:33:47.292Z pid=67433 tid=oxds3zho5 INFO: Running in ruby 2.6.4p104 (2019-08-28 revision 67798) [x86_64-darwin20]
-2022-02-01T09:33:47.292Z pid=67433 tid=oxds3zho5 INFO: See LICENSE and the LGPL-3.0 for licensing details.
-2022-02-01T09:33:47.292Z pid=67433 tid=oxds3zho5 INFO: Upgrade to Sidekiq Pro for more features and support: https://sidekiq.org
-2022-02-01T09:33:47.293Z pid=67433 tid=oxds3zho5 INFO: Booting Sidekiq 6.4.0 with redis options {}
-2022-02-01T09:33:47.308Z pid=67433 tid=oxds3zho5 INFO: Starting processing, hit Ctrl-C to stop
-
-
-```
-3. Railsとsidekiqを連携させるための設定を追記して、サーバーの再起動
-```bigquery
-#config/application.rb
-
-# Railsとsidekiqを連携させるための追記
-config.active_job.queue_adapter = :sidekiq
-```
-```bigquery
-#config/sidekiq.rb
-
-# Redisの場所を特定するのにSidekiq.configure_serverブロックとSidekiq.configure_clientブロックの両方を定義する
-Sidekiq.configure_server do |config|
-  config.redis = {
-      url: 'redis://localhost:6379'
-  }
-end
-
-Sidekiq.configure_client do |config|
-  config.redis = {
-      url: 'redis://localhost:6379'
-  }
+class AddNotificationFlagsToUsers < ActiveRecord::Migration[5.2]
+  def change
+    add_column :users, :notification_on_comment, :boolean, default: true
+    add_column :users, :notification_on_like, :boolean, default: true
+    add_column :users, :notification_on_follow, :boolean, default: true
+  end
 end
 ```
+3. `$ bundle exec rails db:migrate`
+
+## 通知設定の実装
+1. マイページで通知設定をするためのコントローラーを作成($ bundle exec rails g controller mypage::notification_settings)
 ```bigquery
-#sidekiq.yml
+class Mypage::NotificationSettingsController < Mypage::BaseController
+  def edit
+    @user = User.find(current_user.id)
+  end
 
-# 同時に処理できるprocessの数を設定
-:concurrency: 25
-# キューの実行順を設定
-:queues:
-  - default
-  - mailers
-```
-## sinatraダッシュボードの追加
-```bigquery
- # routes.rb
+  def update
+    @user = User.find(current_user.id)
+    if @user.update(notification_settings_params)
+      redirect_to edit_mypage_notification_setting_path, success: '設定を更新しました'
+    else
+      flas.now[:danger] = "設定の更新に失敗しました"
+      render :edit
+    end
+  end
 
-require 'sidekiq/web'
+  private
 
-Rails.application.routes.draw do
-if Rails.env.development?
-    mount LetterOpenerWeb::Engine, at: '/letter_opener'
---     以下を追記
-    mount Sidekiq::Web, at: '/sidekiq'
+  def notification_settings_params
+    params.require(:user).permit(:notification_on_comment, :notification_on_like, :notification_on_follow)
+  end
 end
 ```
+2. ルーティング
+```bigquery
+#routes.rb
 
-# 確認してみよう！
-1. 投稿にコメントをする
-2. メールが送信される(http://localhost:3000/letter_opener/)
-- **送れていることを確認!**
+namespace :mypage do
+    resource :account, only: %i[edit update]
+    resources :activities, only: %i[index]
+    #ここを追記
+    resource :notification_setting, only: %i[edit update]
+  end
+```
+3. ビューの作成
+```bigquery
+#edit.html.slim
+
+= form_with model: @user, url: mypage_notification_setting_path, method: :patch, local: true do |f|
+  = render 'shared/error_messages', object: f.object
+  .form-group
+    = f.check_box :notification_on_comment
+    = f.label :notification_on_comment
+
+  .form-group
+    = f.check_box :notification_on_like
+    = f.label :notification_on_like
+
+  .form-group
+    = f.check_box :notification_on_follow
+    = f.label :notification_on_follow
+
+  = f.submit class: 'btn btn-primary btn-raised'
+```
+```bigquery
+#_sidebar.html.slim
+
+li
+  = link_to '通知設定', edit_mypage_notification_setting_path
+  hr
+```
+4. ja.ymlの設定
+```
+#ja.yml
+
+#追記
+notification_on_comment: 'コメント時の通知メール'
+notification_on_like: 'いいね時の通知メール'
+notification_on_follow: 'フォロー時の通知メール'
+```
+
+## ロジック実装
+各コントローラーにチェックがtrueならば通知メールを送るようにする。(likes,relationshipsは省略)
+```bigquery
+# comments_controller.rb
+
+def create
+    @comment = current_user.comments.build(comment_params)
+    #コメントがsaveされたら受け手に対してメールを送信する。
+    #&&以降を追記
+    UserMailer.with(user_from: current_user, user_to: @comment.post.user, comment: @comment).comment_post.deliver_later if @comment.save&& @comment.post.user.notification_on_comment?
+  end
+```
+
+# 確認してみよう
+1. コメント通知をしないようにテェックを外す
+[![Image from Gyazo](https://i.gyazo.com/94271e67c4cce34117d074145b795610.png)](https://gyazo.com/94271e67c4cce34117d074145b795610)
+2. アカウントを変えてコメントをする
+3. 元のアカウントへ再度ログインしてメールが届いているのか確認(http://localhost:3000/letter_opener/)
+- **届いていない！(この画面だけでは判断は私にしかできませんが)**
    [![Image from Gyazo](https://i.gyazo.com/80a0fa730ecf6751f4ef27a3dd64211d.png)](https://gyazo.com/80a0fa730ecf6751f4ef27a3dd64211d)
-3. ダッシュボードで確認(http://localhost:3000/sidekiq/)
-- **ダッシュボードでsidekiqが動作していることを確認！**
-   [![Image from Gyazo](https://i.gyazo.com/b23ae9a7047e68164bbcad3c8bb5990a.png)](https://gyazo.com/b23ae9a7047e68164bbcad3c8bb5990a)
-4. ログでも確認
-- **Railsがsidekiqへ指示を出している**
-   [![Image from Gyazo](https://i.gyazo.com/5dd9c671a3a5f8c3f23812b6af3e8eb0.png)](https://gyazo.com/5dd9c671a3a5f8c3f23812b6af3e8eb0)
-- **sidekiqが動き出した**  
-[![Image from Gyazo](https://i.gyazo.com/81982fa609bb326d6a2a97b7d1c8432a.png)](https://gyazo.com/81982fa609bb326d6a2a97b7d1c8432a)
-# まとめ
-- 今回の目的はsidekiqを用いて、メールに関する処理を別のレールで並行して行えるようにすることと理解
-- そしてsidekiqを使うためにはRedisが必要
-- また今回はsidekiqの動作を確認するためにsinatraを用いてダッシュボードを使った。
+4. 通知を許可しているアカウントへコメントをしてみるとメールが送れている事を確認
+- **送れているので、設定がうまくいっている事を確認**   
+[![Image from Gyazo](https://i.gyazo.com/69d82d5e49249da4777bff09129a84ac.png)](https://gyazo.com/69d82d5e49249da4777bff09129a84ac)
 
 # コメント
-- メールなどの重い処理の際にsidekiqは必要であると感じました。
-- おそらく規模の大きいアプリになると重要度は増すのではないかと思いました。
+- 今回はシンプルにMVCを作り上げるのみだったので理解しやすかったです。
+- ですが、通知を設定できることはユーザー目線で価値あるものであると思うので重要な課題であったと思います。

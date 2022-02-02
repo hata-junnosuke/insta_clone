@@ -3,8 +3,8 @@ class CommentsController < ApplicationController
 
   def create
     @comment = current_user.comments.build(comment_params)
-    #コメントがsaveされたら受け手に対してメールを送信する。
-    UserMailer.with(user_from: current_user, user_to: @comment.post.user, comment: @comment).comment_post.deliver_later if @comment.save
+    # コメントがsaveされたら受け手に対してメールを送信する。
+    UserMailer.with(user_from: current_user, user_to: @comment.post.user, comment: @comment).comment_post.deliver_later if @comment.save && @comment.post.user.notification_on_comment?
   end
 
   def edit
