@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   root 'posts#index'
 
-  #公式で設定することが記述
+  # 公式で設定することが記述
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: '/letter_opener'
     # sidekiqのダッシュボード（sinatra）

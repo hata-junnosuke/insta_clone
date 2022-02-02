@@ -47,6 +47,8 @@ gem 'config'
 gem 'sidekiq'
 # 最小の労力でRubyによるWebアプリケーションを手早く作るためのDSL
 gem 'sinatra'
+# SEO対策
+gem 'meta-tags'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.1.0', require: false
 

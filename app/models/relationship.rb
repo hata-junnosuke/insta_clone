@@ -24,7 +24,6 @@ class Relationship < ApplicationRecord
   validates :followed_id, presence: true
   validates :follower_id, uniqueness: { scope: :followed_id }
 
-
   after_create_commit :create_activities
 
   private
