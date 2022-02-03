@@ -121,3 +121,11 @@ ngrokをダウンロードをしてトークンも入力して<br>
 [![Image from Gyazo](https://i.gyazo.com/00c9f233596b72ded40614529ef068da.png)](https://gyazo.com/00c9f233596b72ded40614529ef068da)
 - うまくできていればこのようになると思われるのですが、、
 [![Image from Gyazo](https://i.gyazo.com/4f572799c7f1e0769c3a4727bb3a1533.png)](https://gyazo.com/4f572799c7f1e0769c3a4727bb3a1533)
+
+## 追記
+- ご指摘からやり方が違ったことが判明
+1. `./ngrok http 3000`
+2. こちらのURLでアクセスすると閲覧できた。
+[![Image from Gyazo](https://i.gyazo.com/c28ae8dcda7d6cf15af0a60190efb4ec.png)](https://gyazo.com/c28ae8dcda7d6cf15af0a60190efb4ec)
+3. slackにURLを貼り付けると出現
+[![Image from Gyazo](https://i.gyazo.com/ee9e1ac76a498871341d6ef3ba06e05a.png)](https://gyazo.com/ee9e1ac76a498871341d6ef3ba06e05a)
