@@ -57,6 +57,8 @@ group :development, :test do
   # %表記に変更
   gem 'byebug', platforms: %i[mri mingw x64_mingw]
   gem 'faker'
+  gem 'factory_bot_rails'
+  gem 'rspec-rails'
 end
 
 group :development do
