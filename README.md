@@ -1,290 +1,356 @@
 # README
 
-# 15 モデルスペックを実装
+# 16 システムスペックを実装
 
 # 内容
 モデルスペックを実装してください
 
 # 補足
-- ユーザーモデルとポストモデルのスペックは最低限書いてください。その他のモデルは任意とします。
-- バリデーション, スコープ, インスタンスメソッドのスペックを書いてください。
-- 人によっては本実装がサンプルアプリと異なるため、この解答例が絶対的な正解というわけではありません。
+解答例では以下のスペックを書いています。
 
-# 今回の構想
-- 以下の記事を参考にして解答例のコードリーディングをしていく。
->https://qiita.com/jnchito/items/42193d066bd61c740612
+- ログイン成功/失敗
+- ログアウトできる
+- ユーザー登録成功/失敗
+- フォローできること
+- フォローをはずせること
+- 投稿一覧が閲覧できる
+- 新規投稿できる
+- 自分の投稿に編集・削除ボタンが表示される
+- 他人の投稿には編集・削除ボタンが表示されない
+- 投稿を更新できる
+- 投稿を削除できる
+- 投稿の詳細画面が閲覧できる
+- 投稿に対していいねできる
+- 投稿に対していいねを外せる
 
 # 実装
-## gemの追加
-gemの記述と`bundle`
+## gemのインストール
+1. capybaraとwebdriversをインストール
 ```ruby
-  gem 'factory_bot_rails'
-  gem 'rspec-rails'
+  gem  'capybara'
+  gem 'webdrivers'
 ```
+2. `bundle`
+### capybalaとは？
+- UIテストのためのrubyフレームワーク
+### webdriversについて
+- 'chromedriver-helper'というgemもあるがサポートが終了しているので間違わないように注意
 
-## `$ rails generate rspec:install`
-```ruby
-create  .rspec
-      create  spec
-      create  spec/spec_helper.rb
-      create  spec/rails_helper.rb
-
-```
-
-## FactoryBotの設定
-1. spec/rails_helper.rb
+## capybaraの設定
+1. rails_helper.rb
     ```ruby
-    # FactoryBotを使うため以下を追記  
-    
-      require 'factory_bot'
-    
-      config.include FactoryBot::Syntax::Methods
+    # RSpecで利用する場合は、スペックのヘルパファイルに記述を追加する。
+    require 'capybara/rspec'
+    # moduleをsystemで使えるように設定
+    config.include SystemHelper, type: :system
     ```
-2. factories/posts.rb(userは省略)
-- 仮想の投稿を作成   
-```ruby
-   FactoryBot.define do
-    factory :post do
-      body { Faker::Hacker.say_something_smart }
-      images { [File.open("#{Rails.root}/spec/fixtures/fixture.png")] }
-      user
-     end
-   end
-```
-
-## テスト記述
-1. post_spec.rb
-```ruby
-require 'rails_helper'
-
-RSpec.describe Post, type: :model do
-   # describeはテストのグループ化を宣言
-   describe 'バリデーション' do 
-   # it はテストを example という単位にまとめる役割 
-    it '画像は必須であること' do
-      post = build(:post, images: nil)
-      post.valid?
-      expect(post.errors[:images]).to include('を入力してください')
+2. spec_helper.rb
+    ```ruby
+    # ドライバーの設定
+    config.before(:each, type: :system) do
+        driven_by :selenium, using: :headless_chrome, screen_size: [1920, 1080]
     end
+    ```
 
-    it '本文は必須であること' do
-      post = build(:post, body: nil)
-      post.valid?
-      expect(post.errors[:body]).to include('を入力してください')
+## ログイン・ログアウトのシステムスペック
+1. rails_helper.rb
+
+    spec/support/配下のファイルを読み込む設定
+    >https://qiita.com/aiandrox/items/7ff4d73416dc15f0cc0f#specsupport%E9%85%8D%E4%B8%8B%E3%81%AE%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%82%92%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%82%80%E8%A8%AD%E5%AE%9A
+
+    ```ruby
+    Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
+    ```
+2. module
+
+    ここでメソッドを事前に作成
+    ```ruby
+    # support/system_helper.rb
+    
+    module SystemHelper
+      def login
+        user = create(:user)
+        visit login_path
+        fill_in 'メールアドレス', with: user.email
+        fill_in 'パスワード', with: '12345678'
+        click_button 'ログイン'
+      end
+    
+      def login_as(user)
+        visit login_path
+        fill_in 'メールアドレス', with: user.email
+        fill_in 'パスワード', with: '12345678'
+        click_button 'ログイン'
+      end
     end
-
-    it '本文は最大1000文字であること' do
-      post = build(:post, body: "a" * 1001)
-      post.valid?
-      expect(post.errors[:body]).to include('は1000文字以内で入力してください')
-    end
-  end
-
-  describe 'スコープ' do
-    describe 'body_contain' do
-       # !があるので遅延評価ではない 
-      let!(:post) { create(:post, body: 'hello world') }
-       # テスト対象のオブジェクト（またはメソッドの実行結果）が明確に一つに決まっている場合にsubject
-      subject { Post.body_contain('hello') }
-      it { is_expected.to include post }
-    end
-  end
-end
-```
-
-2. user_spec.rb
-```ruby
-require 'rails_helper'
-
-RSpec.describe User, type: :model do
-  describe "バリデーション" do
-    it 'ユーザー名は必須であること' do
-      user = build(:user, username: nil)
-      user.valid?
-      expect(user.errors[:username]).to include('を入力してください')
-    end
-
-    it 'ユーザー名は一意であること' do
-      user = create(:user)# 先にデータが保存されている必要があるのでcreate
-      same_name_user = build(:user, username: user.username)
-      same_name_user.valid?
-      expect(same_name_user.errors[:username]).to include('はすでに存在します')
-    end
-
-    it 'メールアドレスは必須であること' do
-      user = build(:user, email: nil)
-      user.valid?
-      expect(user.errors[:email]).to include('を入力してください')
-    end
-
-    it 'メールアドレスは一意であること' do
-      user = create(:user)
-      same_email_user = build(:user, email: user.email)
-      same_email_user.valid?
-      expect(same_email_user.errors[:email]).to include('はすでに存在します')
-    end
-  end
-
-  describe 'インスタンスメソッド' do
-     # 遅延評価(呼び出されたら発動)
-    let(:user_a) { create(:user) }
-    let(:user_b) { create(:user) }
-    let(:user_c) { create(:user) }
-    let(:post_by_user_a) { create(:post, user: user_a) }
-    let(:post_by_user_b) { create(:post, user: user_b) }
-    let(:post_by_user_c) { create(:post, user: user_c) }
-    describe 'own?' do
-      context '自分のオブジェクトの場合' do
-        it 'trueを返す' do
-          expect(user_a.own?(post_by_user_a)).to be true
+    ```
+3. テスト記述
+    ```ruby
+    # system/user_sessions/user_session_spec.rb
+    
+    require 'rails_helper'
+    
+    RSpec.describe 'ログイン・ログアウト', type: :system do
+      let(:user) { create(:user) }
+    
+      describe 'ログイン' do
+        context '認証情報が正しい場合' do
+          it 'ログインできること' do
+            visit login_path
+            fill_in 'メールアドレス', with: user.email
+            fill_in 'パスワード', with: '12345678'
+            click_button 'ログイン'
+            expect(current_path).to eq posts_path
+            expect(page).to have_content 'ログインしました'
+          end
+        end
+    
+        context '認証情報に誤りがある場合' do
+          it 'ログインできないこと' do
+            visit login_path
+            fill_in 'メールアドレス', with: user.email
+            fill_in 'パスワード', with: '1234'
+            click_button 'ログイン'
+            expect(current_path).to eq login_path
+            expect(page).to have_content 'ログインに失敗しました'
+          end
         end
       end
-
-      context '自分以外のオブジェクトの場合' do
-        it 'falseを返す' do
-          expect(user_a.own?(post_by_user_b)).to be false
+    
+      describe 'ログアウト' do
+        before do
+          login
+        end
+    
+        it 'ログアウトできること' do
+          click_on('ログアウト')
+          expect(current_path).to eq login_path
+          expect(page).to have_content 'ログアウトしました'
         end
       end
     end
+    ```
+   - ユーザーに関するところでコードリーディング
+       ```ruby
+       # spec/system/users/users_spec.rb
+   
+       require 'rails_helper'
 
-    describe 'like' do
-      it 'いいねできること' do
-        expect { user_a.like(post_by_user_b) }.to change { Like.count }.by(1)
-      end
-    end
-
-    describe 'unlike' do
-      it 'いいねを解除できること' do
-        user_a.like(post_by_user_b)
-        expect { user_a.unlike(post_by_user_b) }.to change { Like.count }.by(-1)
-      end
-    end
-
-    describe 'like' do
-      it 'フォローできること' do
-        expect { user_a.follow(user_b) }.to change { Relationship.count }.by(1)
-      end
-    end
-
-    describe 'unlike' do
-      it 'フォローを外せること' do
-        user_a.follow(user_b)
-        expect { user_a.unfollow(user_b) }.to change { Relationship.count }.by(-1)
-      end
-    end
-
-    describe 'following?' do
-       # contextは条件を振り分ける時使う
-       context 'フォローしている場合' do
-        it 'trueを返す' do
-          user_a.follow(user_b)
-          expect(user_a.following?(user_b)).to be true
+       RSpec.describe 'ユーザー登録', type: :system do
+       describe 'ユーザー登録' do
+        context '入力情報が正しい場合' do
+         it 'ユーザー登録ができること' do
+          visit new_user_path
+          # fill_inとwithでフォームを埋めている
+          fill_in 'ユーザー名', with: 'Rails太郎'
+          fill_in 'メールアドレス', with: 'rails@example.com'
+          fill_in 'パスワード', with: '12345678'
+          fill_in 'パスワード確認', with: '12345678'
+          click_button '登録'
+          expect(current_path).to eq login_path
+           # have_contentで文字列の表示を検証する
+          expect(page).to have_content 'ユーザーを作成しました'
+         end
+        end
+    
+        context '入力情報に誤りがある場合' do
+             it 'ユーザー登録に失敗すること' do
+               visit new_user_path
+               fill_in 'ユーザー名', with: ''
+               fill_in 'メールアドレス', with: ''
+               fill_in 'パスワード', with: ''
+               fill_in 'パスワード確認', with: ''
+               click_button '登録'
+               expect(page).to have_content 'ユーザー名を入力してください'
+               expect(page).to have_content 'メールアドレスを入力してください'
+               expect(page).to have_content 'パスワードは3文字以上で入力してください'
+               expect(page).to have_content 'パスワード確認を入力してください'
+               expect(page).to have_content 'ユーザーの作成に失敗しました'
+             end
         end
       end
+    
+       describe 'フォロー' do
+       let!(:login_user) { create(:user) }
+       let!(:other_user) { create(:user) }
+    
+           before do
+             login_as login_user
+           end
+           it 'フォローができること' do
+             visit posts_path
+             expect {
+               # withinでスコープをかけてどこを操作しているかを示す
+     　　　　　# この場合はother_userのフォローボタンをクリックしたことを指示
+               within "#follow-area-#{other_user.id}" do
+                 click_link 'フォロー'
+                 expect(page).to have_content 'アンフォロー'
+               end
+             }.to change(login_user.following, :count).by(1)
+           end
+    
+           it 'フォローを外せること' do
+             login_user.follow(other_user)
+             visit posts_path
+             expect {
+               within "#follow-area-#{other_user.id}" do
+                 click_link 'アンフォロー'
+                 expect(page).to have_content 'フォロー'
+               end
+             }.to change(login_user.following, :count).by(-1)
+           end
+           end
+       end
+       ```
 
-      context 'フォローしていない場合' do
-        it 'falseを返す' do
-          expect(user_a.following?(user_b)).to be false
-        end
-      end
-    end
+## 補足
+- .rspecに以下の記述をするとテストの過程がみやすくなる。
+    ```ruby
+    --require spec_helper
+    --format documentation
+    ```
+- フィーチャスペックで使われるエイリアスの対応関係は以下の通りです。
+    - describe <=> feature
+    - it <=> scenario
+    - let <=> given
+    - let! <=> given!
+    - before <=> background
 
-    describe 'feed' do
-      before do
-        user_a.follow(user_b)
-      end
-      subject { user_a.feed }
-      it { is_expected.to include post_by_user_a }
-      it { is_expected.to include post_by_user_b }
-      it { is_expected.not_to include post_by_user_c }
-    end
-  end
-end
-```
-3. テストを実行
+
+## 確認してみよう
 ```ruby
 $ bundle exec rspec
-2022-02-04 19:15:31 WARN Selenium [DEPRECATION] [:driver_path] Selenium::WebDriver::Chrome#driver_path= is deprecated. Use Selenium::WebDriver::Chrome::Service#driver_path= instead.
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:12)
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:18)
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (4 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:26)
-.....DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:36)
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:37)
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:37)
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:37)
-.....DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:36)
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:37)
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:38)
-.
-
-Finished in 0.62209 seconds (files took 1.22 seconds to load)
-19 examples, 0 failures
-
+        
+        Post
+          バリデーション
+            画像は必須であること
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:31)
+            本文は必須であること
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:37)
+            本文は最大1000文字であること
+          スコープ
+            body_contain
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (4 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:45)
+              is expected to include #<Post id: 103, images: ["fixture.png"], body: "hello world", user_id: 225, created_at: "2022-02-05 00:29:16", updated_at: "2022-02-05 00:29:16">
+        
+        User
+          バリデーション
+            ユーザー名は必須であること
+            ユーザー名は一意であること
+            メールアドレスは必須であること
+            メールアドレスは一意であること
+          インスタンスメソッド
+            own?
+              自分のオブジェクトの場合
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:56)
+                trueを返す
+              自分以外のオブジェクトの場合
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:57)
+                falseを返す
+            like
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:57)
+              いいねできること
+            unlike
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:57)
+              いいねを解除できること
+            like
+              フォローできること
+            unlike
+              フォローを外せること
+            following?
+              フォローしている場合
+                trueを返す
+              フォローしていない場合
+                falseを返す
+            feed
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:56)
+              is expected to include #<Post id: 108, images: ["fixture.png"], body: "If we reboot the driver, we can get to the CSS dri...", user_id: 243, created_at: "2022-02-05 00:29:17", updated_at: "2022-02-05 00:29:17">
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:57)
+              is expected to include #<Post id: 109, images: ["fixture.png"], body: "Backing up the sensor won't do anything, we need t...", user_id: 246, created_at: "2022-02-05 00:29:17", updated_at: "2022-02-05 00:29:17">
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/user_spec.rb:58)
+              is expected not to include #<Post id: 110, images: ["fixture.png"], body: "The SSL matrix is down, connect the neural bus so ...", user_id: 249, created_at: "2022-02-05 00:29:17", updated_at: "2022-02-05 00:29:17">
+        
+        ポスト
+          ポスト一覧
+            ログインしている場合
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:6)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:7)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:8)
+        2022-02-05 09:29:18 WARN Selenium [DEPRECATION] [:browser_options] :options as a parameter for driver initialization is deprecated. Use :capabilities with an Array of value capabilities/options if necessary instead.
+              フォロワーと自分の投稿だけが表示されること
+            ログインしていない場合
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:6)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:7)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:8)
+              全てのポストが表示されること
+          ポスト投稿
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from create at /Users/hatajunnosuke/RubymineProjects/insta_clone/app/controllers/posts_controller.rb:17)
+            画像を投稿できること
+          ポスト更新
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:51)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:52)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:53)
+            自分の投稿に編集ボタンが表示されること
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:51)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:52)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:53)
+            他人の投稿には編集ボタンが表示されないこと
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:51)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:52)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:53)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from update at /Users/hatajunnosuke/RubymineProjects/insta_clone/app/controllers/posts_controller.rb:32)
+            投稿が更新できること
+          ポスト削除
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:89)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:90)
+            自分の投稿に削除ボタンが表示されること
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:89)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:90)
+            他人の投稿には削除ボタンが表示されないこと
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:89)
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:90)
+            投稿が削除できること
+          ポスト詳細
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:123)
+            投稿の詳細画面が閲覧できること
+          いいね
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:137)
+            いいねができること
+        DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <main> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/system/posts/posts_spec.rb:137)
+            いいねを取り消せること
+        
+        ログイン・ログアウト
+          ログイン
+            認証情報が正しい場合
+              ログインできること
+            認証情報に誤りがある場合
+              ログインできないこと
+          ログアウト
+            ログアウトできること
+        
+        ユーザー登録
+          ユーザー登録
+            入力情報が正しい場合
+              ユーザー登録ができること
+            入力情報に誤りがある場合
+              ユーザー登録が失敗すること
+          フォロー
+            フォローができること
+            フォローを外せること
+        
+        Finished in 18.2 seconds (files took 2.3 seconds to load)
+        38 examples, 0 failures
 ```
-ちなみに、限定的に実行するには
+- **総員38名、事故なし、現在員38名、健康状態異常なし！**
 
-`$ bundle exec rspec spec/models/user_spec.rb`
-
-4. わざと失敗させてテストが機能していることを確かめる
-- 1001のところを999文字にする
-```ruby
-# post_spec.rb
-
- it '本文は最大1000文字であること' do
-      post = build(:post, body: "a" * 999)
-      post.valid?
-      expect(post.errors[:body]).to include('は1000文字以内で入力してください')
- end
-```
-- すると結果は？
-```ruby
-$ bundle exec rspec spec/models/post_spec.rb
-2022-02-04 20:49:32 WARN Selenium [DEPRECATION] [:driver_path] Selenium::WebDriver::Chrome#driver_path= is deprecated. Use Selenium::WebDriver::Chrome::Service#driver_path= instead.
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:12)
-.DEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (3 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:18)
-FDEPRECATION WARNING: #extension_whitelist is deprecated, use #extension_allowlist instead. (called from block (4 levels) in <top (required)> at /Users/hatajunnosuke/RubymineProjects/insta_clone/spec/models/post_spec.rb:26)
-.
-
-Failures:
-
-  1) Post バリデーション 本文は最大1000文字であること
-     Failure/Error: expect(post.errors[:body]).to include('は1000文字以内で入力してください')
-       expected [] to include "は1000文字以内で入力してください"
-     # ./spec/models/post_spec.rb:20:in `block (3 levels) in <top (required)>'
-
-Finished in 0.32194 seconds (files took 1.4 seconds to load)
-4 examples, 1 failure
-
-Failed examples:
-
-rspec ./spec/models/post_spec.rb:17 # Post バリデーション 本文は最大1000文字であること
-
-```
-- 失敗した！つまり、テストが機能している事を確認できた。
-## まとめ
->https://qiita.com/jnchito/items/42193d066bd61c740612
-
-この上の記事を参考にまとめる
-- describe / it / expect の役割
-   - describeはテストのグループ化を宣言
-   - it はテストを example という単位にまとめる役割
-   - expect(X).to eq Y で記述するのがエクスペクテーション
-- ネストした describe
-   - describe はいくつでも書けますし、ネストさせることもできます
-   - 適切にグループ化すると、「この describe ブロックはこの機能をテストしてるんだな」と読み手がテストコードを理解しやすくなります。
-- context の使い方
-  - context という機能でテストをグループ化することもできます。
-  - context は条件を分けたりするときに使うことが多いです。(「〇〇な場合」みたいな感じで使う)
-  - describe と同様、 context で適切にグループ化すると、「この context ブロックはこういう条件の場合をテストしてるんだな」と読み手がテストコードを理解しやすくなります。
-- before の使い方
-   - before do ... end で囲まれた部分は example の実行前に毎回呼ばれます。
-   - before ブロックの中では、テストを実行する前の共通処理やデータのセットアップ等を行うことが多いです。
-- let / let! / subject の使い方
-   - let は「before + インスタンス変数」を使うときとは異なり、 遅延評価される という特徴があります。
-     すなわち、 let は必要になる瞬間まで呼び出されません。
-   - let! を使うと example の実行前に let! で定義した値が作られるようになります。（遅延評価はない）
-   - テスト対象のオブジェクト（またはメソッドの実行結果）が明確に一つに決まっている場合は、 subject という機能を使ってテストコードをDRYにすることができます。
-   
 ## コメント
-- RSpecはポートフォリオでも使ったのでイメージはしやすかったです。
-- この課題を機に似たようなdescribeやcontextの使い分けを学べてよかったです。
+- システムスペックもポートフォリオで扱ったので理解しやすかったです。
+- ポートフォリオではidをビューに付与していなくてうまくテストを動作させられなかった事を思い出しました。
+- capybaraはメソッド？がたくさんあるので使用のするときに記事を活用していくことにします。
+
+
+
+## 参考
+>https://qiita.com/jnchito/items/42193d066bd61c740612
+>https://qiita.com/morrr/items/0e24251c049180218db4
+> https://qiita.com/aiandrox/items/7ff4d73416dc15f0cc0f
