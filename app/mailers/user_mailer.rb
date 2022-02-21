@@ -12,7 +12,7 @@ class UserMailer < ApplicationMailer
     # コメントをしたユーザー
     @user_to = params[:user_to]
     @comment = params[:comment]
-    #コメントを受けたことを通知するメールを設定
+    # コメントを受けたことを通知するメールを設定
     mail(to: @user_to.email, subject: "#{@user_from.username}があなたの投稿にコメントしました")
   end
 
