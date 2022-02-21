@@ -1,48 +1,48 @@
 # README
 
-# 06 フォロー機能を実装
+# 07 投稿の検索機能を実装する
 
 ## 内容
-フォロー機能を実装してください
+検索機能を実装してください
 
 ## 補足
-- フォロー・アンフォローは非同期で行う。form_withを利用すること。
-- 適切なバリデーションを付与する
-- 投稿一覧画面について
-- ログインしている場合
-  - フォローしているユーザーと自分の投稿だけ表示させること
-- ログインしていない場合
-  - 全ての投稿を表示させること
-- 一件もない場合は『投稿がありません』と画面に表示させること
-- 投稿一覧画面右にあるユーザー一覧については登録日が新しい順に5件分表示してください
-- ユーザー一覧画面、詳細画面も実装すること
+- 全ての投稿を検索対象とすること（フィードに対する検索ではない）
+- 検索条件としては以下の三つとする 
+  - 本文に検索ワードが含まれている投稿
+    - こちらに関しては半角スペースでつなげることでor検索ができるようにする。e.g.「rails ruby」
+  - コメントに検索ワードが含まれている投稿
+  - 投稿者の名前に検索ワードが含まれている投稿
+- ransackなどの検索用のGemは使わず、フォームオブジェクト、ActiveModelを使って実装すること
+- 検索時のパスは/posts/searchとすること
 
 ## 開発メモ
-### 1/25
-- フォロー機能の実装方法を記事で学習
-  - https://qiita.com/nakachan1994/items/e6107fe3003f6515e385
-  - https://qiita.com/mitsumitsu1128/items/e41e2ff37f143db81897
-- user一覧と詳細
-  - `render @user`ってドユコト
-- post一覧編集
-- relationshipモデル作成
-  - 関連づけ
-    - # :userじゃないの？Userモデルの中間テーブルになるため、どちらもユーザーのidが入るので、わかりやすいように、あえてuser_idを使っていない。
-      belongs_to :follower, class_name: 'User'
-      belongs_to :followed, class_name: 'User'
-    
-- userモデルと関連づけ
-- relationshipコントローラ作成
-- relationshipビュー作成
-- routes
-
 ### 1/26
-- 考察
-  - has_many :following, through: :active_relationships, source: :followed
-    has_many :followers, through: :passive_relationships, source: :follower
-    - https://www.youtube.com/watch?v=gATeEnr8gh4
-      - 上はフォローしている人をactiveを通じてfollowed(フォローされている人)から持ってくる。
-      - 下はフォロワーをpassiveを通じてfollower(フォローしている人)持ってくる。
-  - ` Post.where(user_id: following_ids << id)`なぜこれで自分の投稿まで取得できる？
-    - https://qiita.com/miketa_webprgr/items/361d339d2739792457ab
-    - selfが隠れている！！
+- 実装方法を考察
+  - https://techacademy.jp/magazine/22330
+  - しかし実装方法が結構違うので、解答例のコミットを追いながら学習する。
+- route collectionブロック
+  - （Railsガイド）GETリクエスト+/photos/searchなどの（idを伴わない）パスを認識し、リクエストをPhotosコントローラのsearchアクションにルーティングします。このときsearch_photos_urlやsearch_photos_pathルーティングヘルパーも同時に作成されます。
+- 検索のスコープをpostモデルに追加
+- 検索用のコントローラ
+- 検索用のビュー
+- コメントとユーザーからも検索できるようにする
+- 
+
+
+## 疑問
+- FormObject、search_postのあたりの理解
+  - https://tech-essentials.work/questions/160
+  - https://tech-essentials.work/courses/11/tasks/15/outputs/54
+  - strip..文字列先頭と末尾の空白文字を全て取り除いた文字列を生成して返します。
+  - .split(/[[:blank:]]+/)は空白で区切っている。
+  - ActiveModel,ActiveRecordそれぞれの機能
+- .fetchとは？
+  - fetchメソッドは引数にハッシュのキーを指定することにより、そのキーとセットになっているバリューを取り出します。
+  - fetchメソッドでは第二引数にデフォルトのバリューを設定することができます。
+  - application_controllerで空のハッシュをデフォルトとしている。
+- injectとは？
+  - https://www.sejuku.net/blog/19219
+  - injectはeachやmapと同じように繰り返しを行うメソッドです。
+  - 配列オブジェクト.inject {|初期値, 要素| ブロック処理 }
+- ransackの偉大さを感じる
+- 
