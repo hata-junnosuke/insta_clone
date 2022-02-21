@@ -1,5 +1,8 @@
 {
   "name": "insta_clone",
   "private": true,
-  "dependencies": {}
+  "dependencies": {
+    "bootstrap-material-design": "4.1.1",
+    "swiper": "^5.0.3"
+  }
 }
