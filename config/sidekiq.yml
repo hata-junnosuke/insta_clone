@@ -1,0 +1,6 @@
+# 同時に処理できるprocessの数を設定
+:concurrency: 25
+# キューの実行順を設定
+:queues:
+  - default
+  - mailers

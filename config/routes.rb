@@ -1,9 +1,14 @@
 Rails.application.routes.draw do
+  # sinatraのダッシュボードを使うためrequire
+  require 'sidekiq/web'
+
   root 'posts#index'
 
   #公式で設定することが記述
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: '/letter_opener'
+    # sidekiqのダッシュボード（sinatra）
+    mount Sidekiq::Web, at: '/sidekiq'
   end
   get 'login', to: 'user_sessions#new'
   post 'login', to: 'user_sessions#create'
