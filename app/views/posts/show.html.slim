@@ -1,3 +1,5 @@
+- set_meta_tags title: '投稿詳細ページ', description: @post.body,
+        og: { image: "#{request.base_url}#{@post.images.first.url}"} # 本来carrierwaveのasset_pathで設定すべき
 .post-detail.card
   .image-box
     .swiper-container
@@ -9,7 +11,7 @@
   .image-info-box
     .profile-box.p-3
       .d-flex.align-items-center
-        = image_tag 'profile-placeholder.png', size: '40x40', class: 'rounded-circle mr-1'
+        = image_tag @post.user.avatar.url, size: '40x40', class: 'rounded-circle mr-1'
         = @post.user.username
         - if current_user&.own?(@post)
           .ml-auto
@@ -17,30 +19,20 @@
               = icon 'far', 'trash-alt', class: 'fa-lg'
             = link_to edit_post_path(@post) do
               = icon 'far', 'edit', class: 'fa-lg'
+        - if current_user && !current_user.own?(@post)
+          .ml-auto
+            = render 'like_area', post: @post
     hr.m-0
     .post-body.p-3
       / 投稿の本文
       .row.no-gutters
         .col-2
-          / = image_tag '#', size: '40x40', class: 'rounded-circle'
+          = image_tag @post.user.avatar.url, size: '40x40', class: 'rounded-circle'
         .col-10
           = simple_format(@post.body)
       hr
       / コメント一覧
-      .row.no-gutters
-        .col-2
-          = image_tag 'profile-placeholder.png', size: '40x40', class: 'rounded-circle'
-        .col-10
-          | ダミーコメントダミーコメントダミーコメント
-      hr
-      .row.no-gutters
-        .col-2
-          = image_tag 'profile-placeholder.png', size: '40x40', class: 'rounded-circle'
-        .col-10
-          | ダミーコメントダミーコメントダミーコメント
+      = render 'comments/comments', comments: @comments
     hr.m-0
     .post-comment.p-3
-      form.form-inline.mb-0
-        input type="text" class="form-control input-comment-body" placeholder="コメント"
-        button type="submit" class="btn btn-primary btn-raised"
-          | 投稿
+      = render 'comments/form', post: @post, comment: @comment

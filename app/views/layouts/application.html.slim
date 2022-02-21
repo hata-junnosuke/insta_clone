@@ -3,7 +3,8 @@ html
   head
     meta content=("text/html; charset=UTF-8") http-equiv="Content-Type" /
     meta[name="viewport" content="width=device-width, initial-scale=1.0"]
-    title InstaCloneApp
+    / 設定した項目を実際にviewに出力します。
+    = display_meta_tags(default_meta_tags)
     = csrf_meta_tags
     = csp_meta_tag
     = stylesheet_link_tag 'application', media: 'all'
@@ -16,3 +17,4 @@ html
     = render 'shared/flash_messages'
     main
       = yield
+      = render 'shared/modal'

@@ -31,3 +31,8 @@
 
 /public/uploads
 dump.rdb
+
+#localで使うものはgithubに上げないように
+config/settings.local.yml
+config/settings/*.local.yml
+config/environments/*.local.yml

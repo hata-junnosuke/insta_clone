@@ -41,6 +41,14 @@ gem 'annotate'
 gem 'font-awesome-sass'
 gem 'carrierwave'
 gem 'kaminari'
+# 定数を管理するgem
+gem 'config'
+# 非同期実行を実現するgem
+gem 'sidekiq'
+# 最小の労力でRubyによるWebアプリケーションを手早く作るためのDSL
+gem 'sinatra'
+# SEO対策
+gem 'meta-tags'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.1.0', require: false
 
@@ -49,6 +57,8 @@ group :development, :test do
   # %表記に変更
   gem 'byebug', platforms: %i[mri mingw x64_mingw]
   gem 'faker'
+  gem 'factory_bot_rails'
+  gem 'rspec-rails'
 end
 
 group :development do
@@ -67,14 +77,18 @@ group :development do
   gem 'binding_of_caller'
   gem 'pry-byebug'
   gem 'pry-rails'
+  # 電子メールを閲覧するためのインターフェースを提供
+  gem 'letter_opener_web'
 end
 
 group :test do
   # Adds support for Capybara system testing and selenium driver
-  gem 'capybara', '>= 2.15'
-  gem 'selenium-webdriver'
+  # gem 'capybara', '>= 2.15'
+  # gem 'selenium-webdriver'
   # Easy installation and use of chromedriver to run system tests with Chrome
-  gem 'chromedriver-helper'
+  # gem 'chromedriver-helper'
+  gem 'capybara'
+  gem 'webdrivers'
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
