@@ -3,6 +3,7 @@
 # Table name: users
 #
 #  id               :bigint           not null, primary key
+#  avatar           :string(255)
 #  crypted_password :string(255)
 #  email            :string(255)      not null
 #  salt             :string(255)
@@ -17,6 +18,9 @@
 class User < ApplicationRecord
   authenticates_with_sorcery!
 
+  # 画像セットのため
+  mount_uploader :avatar, AvatarUploader
+
   validates :username, uniqueness: true, presence: true
   validates :email, uniqueness: true, presence: true
   validates :password, length: { minimum: 3 }, if: -> { new_record? || changes[:crypted_password] }
@@ -29,11 +33,11 @@ class User < ApplicationRecord
   has_many :like_posts, through: :likes, source: :post
   # フォローをした、されたの関係
   has_many :active_relationships, class_name: 'Relationship',
-           foreign_key: 'follower_id',
-           dependent: :destroy
+                                  foreign_key: 'follower_id',
+                                  dependent: :destroy
   has_many :passive_relationships, class_name: 'Relationship',
-           foreign_key: 'followed_id',
-           dependent: :destroy
+                                   foreign_key: 'followed_id',
+                                   dependent: :destroy
   # 一覧画面で使う
   has_many :following, through: :active_relationships, source: :followed
   has_many :followers, through: :passive_relationships, source: :follower
